@@ -2,9 +2,6 @@
 
 library(googleVis)
 
-# Would be nice to make a heat map in the back with the practitioner population
-# density in each metro area
-
 mapping <- function(dat, zipDat, zip_usr) {
   
   state <- zipDat[zipDat$ZIPCode %in% zip_usr,]$State[1]

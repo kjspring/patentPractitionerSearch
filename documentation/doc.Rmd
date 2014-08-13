@@ -12,11 +12,13 @@ runtime: shiny
 
 * The first step is to download and load the data
 
-```{r}
+```{r, eval=FALSE}
 fileURL <- 'http://www.uspto.gov/ip/boards/oed/attorney-roster/attorney.zip'
 
-download.file(fileURL, "data/raw/roster.zip")
-unzip("data/raw/roster.zip", exdir="data/raw")
+if(!file.exists("data/raw/roster.zip")) {
+  download.file(fileURL, "data/raw/roster.zip")
+  unzip("data/raw/roster.zip", exdir="data/raw")
+  }
 dat <- read.table("data/raw/WebRoster.txt", 
                   header=F, sep=",",
                   colClasses = "character")
@@ -39,7 +41,7 @@ colnames(dat) <- c("lastName", "firstName",
 * There is an empty variable at the end
 * Missing data can be listed as nothing entered or '--'
 
-```{r}
+```{r, eval=FALSE}
 # Remove last NA column
 dat <- dat[,-16]
 
@@ -63,7 +65,7 @@ for (i in 1:length(EXTs)) {
 * zip code data downloaded from http://greatdata.com/free-zip-code-database
 * Accessed 2014-08-12
 
-```{r}
+```{r, , eval=FALSE}
 fileURL <- "http://greatdata.com/free-zip-code-database"
 download.file(fileURL, "data/raw/roster.zip")
 unzip(zipfile="data/raw/free-zip-code-database.zip", 
@@ -80,7 +82,7 @@ zips$Longitude <- as.numeric(zips$Longitude)
 * Some zip codes listed in the 5+4 format
 * Remove any records of missing data in the zip code
 
-```{r}
+```{r, eval=FALSE}
 # Remove any international addresses
 dat <- dat[dat$country == "US", ]
 
@@ -92,14 +94,6 @@ for (i in seq_along(longzip)) {
   zipsplit <- substr(dat$zip[i], start=1, stop=5)
   dat[longzip[i], ]$zip = zipsplit[i]
 }
-
-# Clean up the zip code data / not necessary since above
-# ZIPs <- grep("-", dat$zip)
-
-#for (i in seq_along(ZIPs)) {
-#  sp <- strsplit(dat[ZIPs[i],]$zip, "-")
-#  dat[ZIPs[i],]$zip <- sp[[1]][1]
-#}
 
 # Remove any zip codes less than 5 numbers
 shortzip <- which(nchar(dat$zip)<5)
@@ -116,17 +110,12 @@ dat <- dat[dat$zip %in% zips$ZIPCode, ]
 # Add the geolocation data to the patent practitioner roster
 * Will be mapping the geolocation information of each zip code with the zip code listed for the work address of the patent practitioner.
 
-```{r}
+```{r, eval=FALSE}
 # Make latitude and longitude variables
 dat$latitude <- NA
 dat$longitude <- NA
 
 zips <- zips[zips$ZIPCode %in% dat$zip,] # remove some geolocations
-
-#for(i in seq_along(dat$zip)) { # takes a while
-#  rownum <- which(zips$ZIPCode == dat$zip[i] )
-#  dat$latitude[i] <- zips$Latitude[rownum] 
-#  dat$longitude[i] <- zips$Longitude[rownum] 
 
 for(i in seq_along(zips$ZIPCode)) { # takes a while to run
   rownum <- which(dat$zip == zips$ZIPCode[i])  # search geolocation
@@ -149,27 +138,214 @@ write.csv(dat, "data/raw/workingDat.csv") # Write the data
 * Zip code (text input)
 * radius (text input)
 * Agent/Attorney/Both (check box)
-* Total results displayed (drop down)
 
 ## Output
 
-* Heat map zooms into area and puts dots where located
-* List of agents in a javascript sortable table displayed
+* Heat map focuses into area and puts dots where located
+* List of agents
 * Default sorted by closest to entered zip and then by last name.
-* First Middle Last Address Phone Agent/Attorney listed
 
 ## Front end development
 * Navigation bar links to this documentation, github repository, data, and web app
 * 3 main sections of the user site: user input, map, and list of results
 
 ### user Input
-
-### Map Results
-
-### List of results
-
-## Back end development
+* The user only has to enter a 5 digit zip code
+* The user can slide the radius measure
+* The user can check or unchec practitioner type (Attorney or Agent)
+* If a non 5 digit
+* Default zip code is 21287 (John Hopkins) with a radius of 5 miles and both Attorney and Agent selected
 
 ### Calling the find function
+* After user inputs the required information, the find.R script is run.
+* A data frame is returned of only the results requested
+
+```{r, eval=FALSE}
+# Find and subset practitioners from user input
+library(fields)
+
+# test data
+#zip <- "77054"
+#radius <- 5 # miles
+#check = "AGENT"
+
+find <- function(dat, zips, zip, radius, check) {
+  
+  # Check user input
+  # Need to check if proper zip code input by user
+  if(nchar(zip) > 5 | nchar(zip) < 5) {
+    stop("Please enter only a 5 digit zip code.")
+  }
+  
+  # Read the registered practitioner working data
+  # Hidden so only read once when server started
+  #dat <- read.csv("data/tidy/workingDat.csv", 
+  #                colClasses = "character")
+  dat$latitude <- as.numeric(dat$latitude) # set long lat as numeric
+  dat$longitude <- as.numeric(dat$longitude)
+  dat$loc <- paste(dat$latitude, dat$longitude, sep=":")
+  
+  # Read the zip code data
+  # hidden because run once with server open
+  #zips <- read.csv("data/raw/free-zip-code-database.csv", 
+  #                 colClasses = "character") # zip code nees to be char
+  
+  zips$Latitude <- as.numeric(zips$Latitude) # set long lat as numeric
+  zips$Longitude <- as.numeric(zips$Longitude)
+  
+  # Subset the practitioner data for only lon/lat & index
+  datSub <- dat[,19:18]
+  
+  # Find the longitude/latitude of the user entered zip code
+  coordZip <- zips[zips$ZIPCode %in% zip,][6:5]
+  
+  # distant matrix distance between datSub and user inputted zip)  
+  dist <- rdist.earth(datSub, coordZip)
+  
+  # which of the distances are less than the radius
+  index <- which(dist < radius)
+  datFind <- dat[index, ]
+  datFind$dist <- round(dist[index],1)
+  
+  # Sort by the distance
+  datFind <- datFind[with(datFind, order(dist, lastName)), ]
+  
+  # If the data frame is empty return an error saying none found
+  if(nrow(datFind) == 0) {
+    stop("No patent agents found in the area specified")
+  }
+  
+  # Also subset by input search of Attorney/Agent/Both
+  if(length(check) == 2) {
+    datFind <- datFind[,-1]
+    return(datFind)
+  } else {
+    datFind <- datFind[datFind$classification==check, ]
+    datFind <- datFind[,-1]
+    return(datFind)
+  }
+}
+```
+### List of results
+* The data frame returned from the find function is used to generate the list at the bottom of the web page.
+* A function named listing in the listing.R script prints out the HTML code necessary to generate the HTML of each result returned in the data frame.
+* I think tables are not effective here and should have better style
+
+```{r, eval=FALSE}
+# Filename: listing.R
+
+listing <- function(a ) {
+  # This function outputs HTML using the shiny library
+  # to generate the HTML code needed to display the values 
+  # extracted from the returned table from the find() function.
+  
+  # convert any NA to readable
+  a[is.na(a)] <- " "
+  
+  html_vec <- vector()
+  
+  for(i in 1:nrow(a)) {
+    html_vec[i] <- paste(
+      fluidRow(
+        column(12,
+               fluidRow(
+                 column(5,
+                        h4(paste(a$firstName[i], 
+                                 a$middleName[i], 
+                                 a$lastName[i], 
+                                 sep=" ")
+                        ),
+                        fluidRow(
+                          column(8,
+                                 em(a$firm[i])),
+                          column(4,
+                                 h5(a$telephone[i])
+                                 )
+                        ),
+                        fluidRow(
+                          column(10,
+                                 paste(a$address1[i], 
+                                       a$address2[i], 
+                                       a$address3[i], 
+                                       sep = " "),
+                                 fluidRow(
+                                   column(12,
+                                          paste(a$city[i], 
+                                                a$state[i], 
+                                                a$zip[i], 
+                                                sep=", "))
+                                 )
+                          ),
+                          column(2)
+                        )
+                 ),
+                 column(7, align="right",
+                        h5(a$classification[i]))
+               ),
+               fluidRow(
+                 column(5),
+                 column(7,
+                        align="right",
+                        paste(a$dist[i], "mi away", sep=" "))
+               )
+        )
+      ),
+      hr()
+    )
+    
+  }
+  return(HTML(paste(html_vec)))
+}
+
+```
 
 ### Rendering the map
+* Mapping is created in the mapping.R script
+* This script uses the googleVis library to generate a Google Chart
+* Google Chart uses the geolocation data as a way to mark on the map where the results will be located.
+
+```{r, eval=FALSE}
+# Filename: mapping.R
+
+library(googleVis)
+
+mapping <- function(dat, zipDat, zip_usr) {
+  
+  state <- zipDat[zipDat$ZIPCode %in% zip_usr,]$State[1]
+  reg_spec <- paste("US", state, sep="-")
+  Gmap <- gvisGeoChart(dat, "loc",
+                  options=list(region = reg_spec,
+                               #resolution = "metros",
+                               resolution = "provinces",
+                               displayMode="Markers", 
+                               #colorAxis="{colors:['red']}",
+                               #sizeAxis="{minValue=0, maxValue=0}",
+                               backgroundColor="lightblue"), chartid="Patent")
+  return(Gmap)
+}
+```
+
+
+## Flow
+* Flow: User requests results --> find.R is run and returns the results in a data frame --> mapping.R and listing.R is run to format the results into a map and into a list of results
+
+
+
+
+## Bugs
+
+### invalid multibyte string 1
+* When displaying a large amount of results the error `message(Error in nchar(object, type = "chars") : invalid multibyte string 1)` is displayed.
+* This may be due to a strange character in the data.
+* Possible solutions http://stackoverflow.com/questions/4993837/r-invalid-multibyte-string
+* Can reproduce by using zip of 90210, radius of 74, and both Attorney and Agent checked.
+
+### NA in the results list when no data to display
+* HTML is outputting NA in the list section of the page when there is no results displayed
+* Can reproduce by unchecking both Attorney and Agent
+
+### Slow when lots of results
+* Due to the mapping function.
+* It is mapping and display each result in the page.
+* Could be fixed by only displaying a certain amount of results at a time
+* Can reproduce by using the default values and increasing miles to 100

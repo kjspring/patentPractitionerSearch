@@ -1,4 +1,4 @@
-shinyUI(navbarPage("Local Patent Practitioner Locator",
+shinyUI(navbarPage("Local Patent Practitioners",
                    tabPanel("Search",
                             fluidRow(
                               column(12,        
@@ -55,10 +55,12 @@ shinyUI(navbarPage("Local Patent Practitioner Locator",
                               )
                    ),
                    navbarMenu("Docs",
-                              tabPanel("User Instructions"
+                              tabPanel("User Instructions",
+                                       includeHTML("www/userInstruction.html")
+                              ),
                               
-                                       
-                              
-                              ), # Put your slides here
-                              tabPanel("Data Analysis Docs")) # put your RMD here
+                              tabPanel("Data Analysis Docs",
+                                      includeHTML("www/doc.html")
+                                       )
+                              ) 
 ))

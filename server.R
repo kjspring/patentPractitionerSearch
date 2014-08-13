@@ -6,6 +6,7 @@
 #
 library(shiny)
 library(googleVis)
+library(knitr)
 
 source("scripts/find.R")
 source("scripts/mapping.R")
@@ -18,6 +19,9 @@ dat <- read.csv("data/tidy/workingDat.csv",
 
 counties <- readRDS("data/raw/counties.rds")
 
+knit2html("documentation/doc.Rmd", "www/doc.html", quiet=TRUE)
+knit2html("documentation/userInstruction.Rmd", "www/userInstruction.html", quiet=TRUE)
+
 shinyServer(function(input, output) {
   
   dataInput <- reactive({
@@ -28,6 +32,8 @@ shinyServer(function(input, output) {
                           as.character(input$check)
     )
   })
+  
+
   # You can access the value of the widget with input$select, e.g.
   output$map <- renderGvis({mapping(dataInput(), zips, as.character(input$zip))})
   
@@ -36,9 +42,7 @@ shinyServer(function(input, output) {
   output$resultsHTML <- renderText({
                           listing(dataInput())
                         })
-  
-  #output$searchTable <- renderTable({dataInput()})
-  
+    
   output$resultsNum <- renderText({
                         paste("Total Results: ", nrow(dataInput()))
   })

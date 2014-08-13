@@ -1,0 +1,23 @@
+---
+title: "User Instructions"
+runtime: shiny
+output: html_document
+---
+
+## How to use
+
+1. Enter a 5-digit United States United States Postal Service Zip-Code.
+2. Adjust the Search Area to the acceptable radius. Default is 5, minimum is 0, and maximum is 100.
+3. Check or uncheck Attorney or Agent type of practitioner. Must have at least one checked.
+4. Obtain your results. Map shows where the registered patent practitioner is located and below the map is a listing of their contact information.
+
+Default parameters:
+
+* zip = 21287 (John Hopkins)
+* radius = 5
+* Agent and Attorney
+
+## Bugs
+
+* Unchecking both Attorney and Agent results in NA listed in the result listings.
+* All results will be displayed so in areas like New York City (zip 10001), Washington, D.C. (20005), and San Francisco (94102) will generate lots of results and may slow down the browser.
