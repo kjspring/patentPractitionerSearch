@@ -1,12 +1,12 @@
 {
-    "contents" : "# Filename: listing.R\n\nlisting <- function( ) {\n  # This function outputs HTML using the shiny library\n  # to generate the HTML code needed to display the values \n  # extracted from the returned table from the find() function.\n  \n  for(nrow(a))\n    div()\n  \n  \n}",
+    "contents" : "# Filename: listing.R\n\n#listing <- function( ) {\n  # This function outputs HTML using the shiny library\n  # to generate the HTML code needed to display the values \n  # extracted from the returned table from the find() function.\n  \n  #for(nrow(a))\n  #  div()\n  \n  \n#}",
     "created" : 1407906527298.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "3177646580",
+    "hash" : "102599783",
     "id" : "7333F4A1",
-    "lastKnownWriteTime" : 1407908694,
+    "lastKnownWriteTime" : 1407911952,
     "path" : "~/projects/dataDevProj/scripts/listing.R",
     "project_path" : "scripts/listing.R",
     "properties" : {
