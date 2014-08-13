@@ -1,0 +1,175 @@
+---
+title: "Documentation"
+author: "Kevin Spring"
+date: "08/11/2014"
+output: html_document
+runtime: shiny
+---
+
+# Downloading and Cleaning the data
+* The United States Patent and Trademark Office (USPTO) contains a list of all patent agents and attorneys that are registered and allowed to prosecute patent applications before the USPTO.
+* 42,624 patent practitioners are registered
+
+* The first step is to download and load the data
+
+```{r}
+fileURL <- 'http://www.uspto.gov/ip/boards/oed/attorney-roster/attorney.zip'
+
+download.file(fileURL, "data/raw/roster.zip")
+unzip("data/raw/roster.zip", exdir="data/raw")
+dat <- read.table("data/raw/WebRoster.txt", 
+                  header=F, sep=",",
+                  colClasses = "character")
+
+colnames(dat) <- c("lastName", "firstName", 
+                   "middleName", "suffix", 
+                   "firm", "address1", 
+                   "address2", "address3", 
+                   "city", "state", 
+                   "country", "zip", 
+                   "telephone", "registrationNumber", 
+                   "classification")
+
+```
+
+# Tidy the data
+* The data is extremely messy.
+* Looks like the USPTO stores the data as entered by the practitioner.
+* For example, no standard phone number and addresses are mixed with firm names in a specific variable.
+* There is an empty variable at the end
+* Missing data can be listed as nothing entered or '--'
+
+```{r}
+# Remove last NA column
+dat <- dat[,-16]
+
+# Clean up the telephone data
+dat[dat == ""] <- NA
+dat[dat == "--"] <- NA
+
+# Put the extensions into its own column
+dat$ext <- ""
+EXTs <- grep("EXT", dat$telephone)
+
+for (i in 1:length(EXTs)) {
+  sp <- strsplit(dat[EXTs[i],]$telephone, "EXT")
+  dat[EXTs[i],]$telephone <- sp[[1]][1]
+  dat[EXTs[i],]$ext <- sp[[1]][2]
+}
+```
+
+# Getting Latitude and longitudinal data for each address
+* Will use the the central latitude and logitude value for the specific zip code of the user and the patent practitioner address
+* zip code data downloaded from http://greatdata.com/free-zip-code-database
+* Accessed 2014-08-12
+
+```{r}
+fileURL <- "http://greatdata.com/free-zip-code-database"
+download.file(fileURL, "data/raw/roster.zip")
+unzip(zipfile="data/raw/free-zip-code-database.zip", 
+      files = "free-zip-code-database.csv",
+      exdir="data/raw")
+zips <- read.csv("data/raw/free-zip-code-database.csv",
+                 colClasses = "character") # zip code nees to be char
+zips$Latitude <- as.numeric(zips$Latitude) # set long lat as numeric
+zips$Longitude <- as.numeric(zips$Longitude)
+```
+
+# Clean up the Zip code variable
+* Will be mapping the geolocation information of each zip code with the zip code listed for the work address of the patent practitioner.
+* Some zip codes listed in the 5+4 format
+* Remove any records of missing data in the zip code
+
+```{r}
+# Remove any international addresses
+dat <- dat[dat$country == "US", ]
+
+# Some zip codes do not have a "-" separator. So look for any larger
+# than 5 characters and save only the first 5
+longzip <- which(nchar(dat$zip)>5)
+
+for (i in seq_along(longzip)) {
+  zipsplit <- substr(dat$zip[i], start=1, stop=5)
+  dat[longzip[i], ]$zip = zipsplit[i]
+}
+
+# Clean up the zip code data / not necessary since above
+# ZIPs <- grep("-", dat$zip)
+
+#for (i in seq_along(ZIPs)) {
+#  sp <- strsplit(dat[ZIPs[i],]$zip, "-")
+#  dat[ZIPs[i],]$zip <- sp[[1]][1]
+#}
+
+# Remove any zip codes less than 5 numbers
+shortzip <- which(nchar(dat$zip)<5)
+dat <- dat[-shortzip, ]
+
+# Remove any data that has missing zip code data
+dat <- dat[-complete.cases(dat$zip),]
+
+# Remove any data that doesn't have any matching zip codes
+dat <- dat[dat$zip %in% zips$ZIPCode, ]
+
+```
+
+# Add the geolocation data to the patent practitioner roster
+* Will be mapping the geolocation information of each zip code with the zip code listed for the work address of the patent practitioner.
+
+```{r}
+# Make latitude and longitude variables
+dat$latitude <- NA
+dat$longitude <- NA
+
+zips <- zips[zips$ZIPCode %in% dat$zip,] # remove some geolocations
+
+#for(i in seq_along(dat$zip)) { # takes a while
+#  rownum <- which(zips$ZIPCode == dat$zip[i] )
+#  dat$latitude[i] <- zips$Latitude[rownum] 
+#  dat$longitude[i] <- zips$Longitude[rownum] 
+
+for(i in seq_along(zips$ZIPCode)) { # takes a while to run
+  rownum <- which(dat$zip == zips$ZIPCode[i])  # search geolocation
+  dat$latitude[rownum] <- zips$Latitude[i] # save latitude
+  dat$longitude[rownum] <- zips$Longitude[i] # save longitude
+}
+
+write.csv(dat, "data/raw/workingDat.csv") # Write the data
+```
+
+# Next step is to build the site
+
+* Have a heat map of United States with red=lots of agents and blue=not so many (need to map lat/long to map plot)
+* User will enter their zip code and radius of the search
+* User can check how many practitioners will be listed
+* User can check a box to display only Agents, Attorneys or both.
+
+## User inputs
+
+* Zip code (text input)
+* radius (text input)
+* Agent/Attorney/Both (check box)
+* Total results displayed (drop down)
+
+## Output
+
+* Heat map zooms into area and puts dots where located
+* List of agents in a javascript sortable table displayed
+* Default sorted by closest to entered zip and then by last name.
+* First Middle Last Address Phone Agent/Attorney listed
+
+## Front end development
+* Navigation bar links to this documentation, github repository, data, and web app
+* 3 main sections of the user site: user input, map, and list of results
+
+### user Input
+
+### Map Results
+
+### List of results
+
+## Back end development
+
+### Calling the find function
+
+### Rendering the map

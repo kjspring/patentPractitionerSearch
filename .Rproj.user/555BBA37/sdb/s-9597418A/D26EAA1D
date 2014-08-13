@@ -1,0 +1,16 @@
+{
+    "contents" : "\n# This is the user-interface definition of a Shiny web application.\n# You can find out more about building applications with Shiny here:\n#\n# http://shiny.rstudio.com\n#\n\nlibrary(shiny)\nshinyUI(\n  fluidPage(\n    titlePanel(\"Patent Practitioner Search\"),\n    \n    sidebarLayout(\n      sidebarPanel(\"\",\n                   textInput(\"zip\", \n                             label = h5(\"Zip Code Search\"),\n                             value = \"95014\"),\n                   hr(),\n                   sliderInput(\"radius\",\n                               label=h5(\"Search Area (mi)\"),\n                               min=1, max=100, value= 1 ),\n                   hr(),\n                   checkboxGroupInput(\"check\", label = h5(\"Practitioner Type\"), \n                                      choices = c(\"Attorney\" = \"ATTORNEY\", \"Agent\" = \"AGENT\"),\n                                      selected = c(\"ATTORNEY\", \"AGENT\")),\n                   hr(),\n                   verbatimTextOutput(\"resultsNum\")\n                   ),\n      mainPanel( htmlOutput(\"map\")\n                  )\n                ) ,\n    fluidRow(\n      tableOutput(\"searchTable\")\n            )\n    \n        )\n)\n\n",
+    "created" : 1407823112821.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3400118080",
+    "id" : "D26EAA1D",
+    "lastKnownWriteTime" : 1407909273,
+    "path" : "~/projects/dataDevProj/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
