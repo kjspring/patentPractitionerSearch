@@ -1,0 +1,10 @@
+// Additional CSS file for the listing layout
+// Filename additional.css
+
+#name
+{
+	font-family: ‘Palatino Linotype’, ‘Book Antiqua’, Palatino, serif;
+	font-weight: 500;
+	line-height: 1.1;
+	color: #48ca3b;
+}

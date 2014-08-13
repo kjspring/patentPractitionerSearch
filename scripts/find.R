@@ -42,6 +42,10 @@ find <- function(dat, zips, zip, radius, check) {
   # which of the distances are less than the radius
   index <- which(dist < radius)
   datFind <- dat[index, ]
+  datFind$dist <- round(dist[index],1)
+  
+  # Sort by the distance
+  datFind <- datFind[with(datFind, order(dist, lastName)), ]
   
   # If the data frame is empty return an error saying none found
   if(nrow(datFind) == 0) {

@@ -9,6 +9,7 @@ library(googleVis)
 
 source("scripts/find.R")
 source("scripts/mapping.R")
+source("scripts/listing.R")
 
 zips <- read.csv("data/raw/free-zip-code-database.csv", 
                  colClasses = "character") # Load zip code data
@@ -32,7 +33,11 @@ shinyServer(function(input, output) {
   
   # Don't want to just render a Table, I want to extract the data from the
   # table and make a nice looking list
-  output$searchTable <- renderTable({dataInput()})
+  output$resultsHTML <- renderText({
+                          listing(dataInput())
+                        })
+  
+  #output$searchTable <- renderTable({dataInput()})
   
   output$resultsNum <- renderText({
                         paste("Total Results: ", nrow(dataInput()))

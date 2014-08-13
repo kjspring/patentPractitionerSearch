@@ -48,11 +48,17 @@ shinyUI(navbarPage("Local Patent Practitioner Locator",
                             ),
                             fluidRow(
                               column(12,
-                                tableOutput("searchTable")
+                                #verbatimTextOutput("resultsHTML")
+                                htmlOutput("resultsHTML")
+                                #tableOutput("searchTable")
                                 )
                               )
                    ),
                    navbarMenu("Docs",
-                              tabPanel("User Instructions"),
-                              tabPanel("Data Analysis Docs"))
+                              tabPanel("User Instructions"
+                              
+                                       
+                              
+                              ), # Put your slides here
+                              tabPanel("Data Analysis Docs")) # put your RMD here
 ))
