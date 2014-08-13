@@ -54,6 +54,7 @@ find <- function(dat, zips, zip, radius, check) {
     return(datFind)
   } else {
     datFind <- datFind[datFind$classification==check, ]
+    datFind <- datFind[,-1]
     return(datFind)
   }
 }

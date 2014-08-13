@@ -11,10 +11,8 @@ mapping <- function(dat, zipDat, zip_usr) {
   reg_spec <- paste("US", state, sep="-")
   Gmap <- gvisGeoChart(dat, "loc",
                   options=list(region = reg_spec,
-                               #magnifyingGlass.enable = FALSE,
-                               #height = 500,
-                               #keepAspectRatio = TRUE,
-                               resolution = "metros",
+                               #resolution = "metros",
+                               resolution = "provinces",
                                displayMode="Markers", 
                                #colorAxis="{colors:['red']}",
                                #sizeAxis="{minValue=0, maxValue=0}",
