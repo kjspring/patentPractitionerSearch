@@ -8,7 +8,6 @@ library(shiny)
 library(googleVis)
 
 source("scripts/find.R")
-source("scripts/helpers.R")
 source("scripts/mapping.R")
 
 zips <- read.csv("data/raw/free-zip-code-database.csv", 

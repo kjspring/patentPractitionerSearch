@@ -1,12 +1,12 @@
 {
-    "contents" : "\n# This is the server logic for a Shiny web application.\n# You can find out more about building applications with Shiny here:\n#\n# http://shiny.rstudio.com\n#\nlibrary(shiny)\nlibrary(googleVis)\n\nsource(\"scripts/find.R\")\nsource(\"scripts/helpers.R\")\nsource(\"scripts/mapping.R\")\n\nzips <- read.csv(\"data/raw/free-zip-code-database.csv\", \n                 colClasses = \"character\") # Load zip code data\ndat <- read.csv(\"data/tidy/workingDat.csv\", \n                colClasses = \"character\") # Load patent agent registry\n\ncounties <- readRDS(\"data/raw/counties.rds\")\n\nshinyServer(function(input, output) {\n  \n  dataInput <- reactive({\n                  a = find(dat,\n                          zips,\n                          as.character(input$zip), \n                          as.numeric(input$radius), \n                          as.character(input$check)\n    )\n  })\n  # You can access the value of the widget with input$select, e.g.\n  output$map <- renderGvis({mapping(dataInput(), zips, as.character(input$zip))})\n  \n  # Don't want to just render a Table, I want to extract the data from the\n  # table and make a nice looking list\n  output$searchTable <- renderTable({dataInput()})\n  \n  output$resultsNum <- renderText({\n                        paste(\"Total Results: \", nrow(dataInput()))\n  })\n  \n})\n",
+    "contents" : "\n# This is the server logic for a Shiny web application.\n# You can find out more about building applications with Shiny here:\n#\n# http://shiny.rstudio.com\n#\nlibrary(shiny)\nlibrary(googleVis)\n\nsource(\"scripts/find.R\")\nsource(\"scripts/mapping.R\")\n\nzips <- read.csv(\"data/raw/free-zip-code-database.csv\", \n                 colClasses = \"character\") # Load zip code data\ndat <- read.csv(\"data/tidy/workingDat.csv\", \n                colClasses = \"character\") # Load patent agent registry\n\ncounties <- readRDS(\"data/raw/counties.rds\")\n\nshinyServer(function(input, output) {\n  \n  dataInput <- reactive({\n                  a = find(dat,\n                          zips,\n                          as.character(input$zip), \n                          as.numeric(input$radius), \n                          as.character(input$check)\n    )\n  })\n  # You can access the value of the widget with input$select, e.g.\n  output$map <- renderGvis({mapping(dataInput(), zips, as.character(input$zip))})\n  \n  # Don't want to just render a Table, I want to extract the data from the\n  # table and make a nice looking list\n  output$searchTable <- renderTable({dataInput()})\n  \n  output$resultsNum <- renderText({\n                        paste(\"Total Results: \", nrow(dataInput()))\n  })\n  \n})\n",
     "created" : 1407823184782.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2777567573",
+    "hash" : "2890703497",
     "id" : "E2CB928A",
-    "lastKnownWriteTime" : 1407906375,
+    "lastKnownWriteTime" : 1407912307,
     "path" : "~/projects/dataDevProj/server.R",
     "project_path" : "server.R",
     "properties" : {
