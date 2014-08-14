@@ -56,14 +56,6 @@ for (i in seq_along(longzip)) {
   dat[longzip[i], ]$zip = zipsplit[i]
 }
 
-# Clean up the zip code data / not necessary since above
-# ZIPs <- grep("-", dat$zip)
-
-#for (i in seq_along(ZIPs)) {
-#  sp <- strsplit(dat[ZIPs[i],]$zip, "-")
-#  dat[ZIPs[i],]$zip <- sp[[1]][1]
-#}
-
 # Remove any zip codes less than 5 numbers
 shortzip <- which(nchar(dat$zip)<5)
 dat <- dat[-shortzip, ]
@@ -79,11 +71,6 @@ dat$latitude <- NA
 dat$longitude <- NA
 
 zips <- zips[zips$ZIPCode %in% dat$zip,] # remove some geolocations
-
-#for(i in seq_along(dat$zip)) { # takes a while
-#  rownum <- which(zips$ZIPCode == dat$zip[i] )
-#  dat$latitude[i] <- zips$Latitude[rownum] 
-#  dat$longitude[i] <- zips$Longitude[rownum] 
 
 for(i in seq_along(zips$ZIPCode)) { # takes a while to run
   rownum <- which(dat$zip == zips$ZIPCode[i])  # search geolocation

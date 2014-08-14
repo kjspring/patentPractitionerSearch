@@ -1,8 +1,3 @@
-
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
 #
 library(shiny)
 library(googleVis)
@@ -17,8 +12,8 @@ zips <- read.csv("data/raw/free-zip-code-database.csv",
 dat <- read.csv("data/tidy/workingDat.csv", 
                 colClasses = "character") # Load patent agent registry
 
-counties <- readRDS("data/raw/counties.rds")
-
+# Will update the documenation html files based on the Rmd files
+# see https://gist.github.com/wch/9744711
 knit2html("documentation/doc.Rmd", "www/doc.html", quiet=TRUE)
 knit2html("documentation/userInstruction.Rmd", "www/userInstruction.html", quiet=TRUE)
 

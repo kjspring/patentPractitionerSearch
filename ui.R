@@ -7,7 +7,7 @@ shinyUI(navbarPage("Local Patent Practitioners",
                                               fluidRow(
                                                 column(12,
                                                        textInput("zip", 
-                                                                 label = h3("Zip Code Search"),
+                                                                 label = h3("Enter Zip Code"),
                                                                  value = "21287"),
                                                        hr()
                                                 )
@@ -54,13 +54,17 @@ shinyUI(navbarPage("Local Patent Practitioners",
                                 )
                               )
                    ),
-                   navbarMenu("Docs",
+                   navbarMenu("Documentation",
                               tabPanel("User Instructions",
                                        includeHTML("www/userInstruction.html")
                               ),
                               
                               tabPanel("Data Analysis Docs",
                                       includeHTML("www/doc.html")
-                                       )
-                              ) 
-))
+                              ),
+                              tabPanel(a(
+                                href="https://github.com/kjspring/patentPractitionerSearch", 
+                                "Repository"))
+                    )
+  )
+)
